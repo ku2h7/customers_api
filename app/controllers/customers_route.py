@@ -3,6 +3,8 @@ from app.utils.database import db
 from app.models.customers import Customers
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
+from flask import render_template
+from flask import redirect, url_for
 from flask_jwt_extended import (
     JWTManager, create_access_token, jwt_required, get_jwt_identity
 )
@@ -11,21 +13,78 @@ import bcrypt
 customers_blueprint = Blueprint('customers_endpoint', __name__)
 jwt = JWTManager()
 
-@customers_blueprint.route('/login', methods=['POST'])
+@customers_blueprint.route('/')
+def home():
+    return render_template('home.html')
+
+@customers_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
-  try:
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
+    if request.method == 'GET':
+        return render_template('login.html')
+    elif request.method == 'POST':
+        try:
+            username = request.form.get('username')
+            password = request.form.get('password')
 
-    customer = Customers.query.filter_by(username=username).first()
-    if not customer or not bcrypt.checkpw(password.encode('utf-8'), customer.password.encode('utf-8')):
-      return jsonify({'message': 'Invalid username or password'}), 401
+            customer = Customers.query.filter_by(username=username).first()
+            if not customer or not bcrypt.checkpw(password.encode('utf-8'), customer.password.encode('utf-8')):
+                return jsonify({'message': 'Invalid username or password'}), 401
 
-    access_token = create_access_token(identity=customer.id)
-    return jsonify({'access_token': access_token}), 200
-  except Exception as e:
-    return jsonify({'error': str(e)}), 500
+            # access_token = create_access_token(identity=customer.id)
+            # return jsonify({'access_token': access_token}), 200
+
+            # Redirect to home page after successful login
+            return redirect(url_for('customers_endpoint.home')) 
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+from flask import redirect, url_for
+
+from flask import redirect, url_for
+
+@customers_blueprint.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+    elif request.method == 'POST':
+        try:
+            # Ambil data dari formulir HTML
+            data = request.form
+
+            # custom format ID 
+            last_customer = Customers.query.order_by(Customers.id.desc()).first()
+            if last_customer:
+                last_id = last_customer.id.split('-')[-1]
+                new_id = f'CUST-{str(int(last_id) + 1).zfill(10)}'
+            else:
+                new_id = 'CUST-0000000001'
+
+            # Enkripsi password sebelum disimpan ke database
+            hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+
+            new_customer = Customers(
+                id=new_id,
+                name=data['name'],
+                phone=data.get('phone'),
+                email=data['email'],
+                username=data['username'],
+                password=hashed_password.decode('utf-8')
+            )
+            db.session.add(new_customer)
+            db.session.commit()
+
+            # return jsonify({'message': 'Customer added successfully!'}), 201
+
+            # Redirect ke halaman login setelah pendaftaran berhasil
+            return redirect(url_for('customers_endpoint.login'))
+
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+
 
 @customers_blueprint.route('/profile', methods=['GET'])
 @jwt_required()
