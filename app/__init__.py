@@ -27,5 +27,5 @@ db.init_app(app)
 
 app.register_blueprint(customers_route.customers_blueprint, url_prefix="/v1")
 
-if __name__ == "__main__":
+if __name__ == "__init__":
     app.run(host='0.0.0.0', port=PORT)
