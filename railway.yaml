@@ -1,6 +1,6 @@
 plugins:
   python:
-    startScript: "poetry run flask --app app run"
+    startScript: "poetry run python main.py"
     env:
       DATABASE_TYPE: "mysql"
       DATABASE_USERNAME: "root"
