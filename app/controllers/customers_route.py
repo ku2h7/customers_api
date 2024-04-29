@@ -1,10 +1,8 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template, redirect, url_for
 from app.utils.database import db
 from app.models.customers import Customers
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
-from flask import render_template
-from flask import redirect, url_for
 from flask_jwt_extended import (
     JWTManager, create_access_token, jwt_required, get_jwt_identity
 )
@@ -14,7 +12,9 @@ customers_blueprint = Blueprint('customers_endpoint', __name__)
 jwt = JWTManager()
 
 @customers_blueprint.route('/')
+@jwt_required()  # Memeriksa apakah token JWT disertakan dalam permintaan
 def home():
+    current_user_id = get_jwt_identity()  # Mendapatkan identitas pengguna dari token JWT
     return render_template('home.html')
 
 @customers_blueprint.route('/login', methods=['GET', 'POST'])
@@ -30,17 +30,13 @@ def login():
             if not customer or not bcrypt.checkpw(password.encode('utf-8'), customer.password.encode('utf-8')):
                 return jsonify({'message': 'Invalid username or password'}), 401
 
-            # access_token = create_access_token(identity=customer.id)
+            access_token = create_access_token(identity=customer.id)
             # return jsonify({'access_token': access_token}), 200
-
-            # Redirect to home page after successful login
-            return redirect(url_for('customers_endpoint.home')) 
+            
+            # Redirect ke endpoint home setelah berhasil login
+            return redirect(url_for('customers_endpoint.home', token=access_token))
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-
-from flask import redirect, url_for
-
-from flask import redirect, url_for
 
 @customers_blueprint.route('/register', methods=['GET', 'POST'])
 def register():

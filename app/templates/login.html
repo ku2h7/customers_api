@@ -15,5 +15,31 @@
         <input type="password" id="password" name="password"><br><br>
         <input type="submit" value="Login">
     </form>
+
+    <script>
+        // Fungsi untuk menyimpan token JWT ke local storage
+        console.log(token)
+        function simpanToken(token) {
+            localStorage.setItem('jwt_token', token);
+        }
+    
+        // Fungsi untuk mengambil token JWT dari URL
+        function ambilTokenDariURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('token');
+        }
+    
+        // Mengambil token JWT dari URL
+        const token = ambilTokenDariURL();
+        if (token) {
+            // Simpan token JWT ke local storage
+            simpanToken(token);
+            
+            // Setelah menyimpan token, lakukan redirect ke halaman home
+            window.location.href = '/home';
+        } else {
+            console.error('Token JWT tidak tersedia. Harap login terlebih dahulu.');
+        }
+    </script>
 </body>
 </html>

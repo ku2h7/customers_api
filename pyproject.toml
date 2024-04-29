@@ -13,6 +13,7 @@ mysql-connector-python = "^8.3.0"
 bcrypt = "^4.1.2"
 flask-jwt-extended = "^4.6.0"
 poetry-dotenv-plugin = "^0.2.0"
+pyyaml = "^6.0.1"
 
 
 [build-system]

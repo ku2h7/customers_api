@@ -1,0 +1,11 @@
+plugins:
+  python:
+    startScript: "app/__init__.py"
+    env:
+      DATABASE_TYPE: "mysql"
+      DATABASE_USERNAME: "root"
+      DATABASE_PASSWORD: "COrDyMjncjFgkCaqtdjOQAJcPKgNTwGx"
+      DATABASE_HOST: "viaduct.proxy.rlwy.net"
+      DATABASE_NAME: "railway"
+      SECRET_KEY: "your_secret_key"
+    port: 45363
